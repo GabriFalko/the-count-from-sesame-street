@@ -3,5 +3,5 @@ A demo repo for updates for automating notifications from github to a notificati
 Uses GitHub Workflows, Slack API
 
 <p align="center">
-  <img src="/assets/the-count-diagram.drawio.svg" default="the-count-diagram.drawio">
+  <img src="/assets/the-count-diagram-2.drawio.svg" default="the-count-diagram.drawio">
 </p>
