@@ -8,18 +8,80 @@ jobs:
   post-to-slack:
     runs-on: ubuntu-latest
     steps:
-      - name: Format Slack message
-        id: format
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Prepare image info
+        id: vars
         run: |
-          # Extract image name (last word of the title)
+          # Extract the image name (last word of the title)
           IMAGE_NAME=$(echo "${{ github.event.client_payload.image_name }}" | awk '{print $NF}')
-          # Format date prettily
+          echo "image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+
+          # Format pretty date
           PRETTY_DATE=$(date -d "${{ github.event.client_payload.timestamp }}" +"%B %d, %Y at %H:%M UTC")
-          # Compose Slack message
-          echo "message=:camera: *New Image Completed*\n*Name:* $IMAGE_NAME\n*Number:* ${{ github.event.client_payload.image_number }}\n*Completed at:* $PRETTY_DATE" >> $GITHUB_OUTPUT
+          echo "pretty_date=$PRETTY_DATE" >> $GITHUB_OUTPUT
+
+          # Set the issue number and repo
+          ISSUE_NUMBER="${{ github.event.client_payload.issue_number }}"
+          REPO="${{ github.event.client_payload.repo }}"
+          echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+          echo "repo=$REPO" >> $GITHUB_OUTPUT
+
+      - name: Determine next image number from file
+        id: count
+        run: |
+          FILE=image-count.txt
+          if [ -s "$FILE" ]; then
+            LAST_NUM=$(tail -n 1 "$FILE" | cut -d',' -f1)
+            IMAGE_NUMBER=$((LAST_NUM + 1))
+          else
+            IMAGE_NUMBER=51
+          fi
+          echo "image_number=$IMAGE_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Append new image info to image-count.txt
+        run: |
+          echo "${{ steps.count.outputs.image_number }},${{ steps.vars.outputs.image_name }},${{ steps.vars.outputs.pretty_date }}" >> image-count.txt
+
+      - name: Commit and push updated image-count.txt
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Add image ${{ steps.vars.outputs.image_name }} as #${{ steps.count.outputs.image_number }}"
+          file_pattern: image-count.txt
+
+      - name: Compose Slack message
+        id: slack
+        run: |
+          ISSUE_LINK="https://github.com/${{ steps.vars.outputs.repo }}/issues/${{ steps.vars.outputs.issue_number }}"
+          MSG=$(cat <<EOF
+:camera: *New Image Posted to Gallery*
+*Name:* ${IMAGE_NAME}
+*Number:* ${IMAGE_NUMBER}
+*Issue:* <${ISSUE_LINK}|#${ISSUE_NUMBER}>
+*Completed at:* ${PRETTY_DATE}
+EOF
+)
+          echo "message=$MSG" >> $GITHUB_OUTPUT
+        env:
+          IMAGE_NAME: ${{ steps.vars.outputs.image_name }}
+          IMAGE_NUMBER: ${{ steps.count.outputs.image_number }}
+          ISSUE_NUMBER: ${{ steps.vars.outputs.issue_number }}
+          PRETTY_DATE: ${{ steps.vars.outputs.pretty_date }}
+          REPO: ${{ steps.vars.outputs.repo }}
 
       - name: Post to Slack
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${{ steps.format.outputs.message }}\"}" "$SLACK_WEBHOOK_URL"
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"Greetings! I am The Count. They call me the Count because I love to count ... things"}' \
+            "$SLACK_WEBHOOK_URL"
+        
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\": \"${{ steps.slack.outputs.message }}\"}" \
+            "$SLACK_WEBHOOK_URL"
+
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"Ah, Ah, Ah!"}' \
+            "$SLACK_WEBHOOK_URL"
