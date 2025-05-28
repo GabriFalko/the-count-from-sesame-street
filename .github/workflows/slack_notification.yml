@@ -51,28 +51,26 @@ jobs:
           file_pattern: image-count.txt
           # Optionally, add your PAT if pushing to a protected repo:
           # token: ${{ secrets.GH_PAT }}
-
+          
       - name: Compose Slack message
         id: slack
         run: |
           ISSUE_LINK="https://github.com/${{ steps.vars.outputs.repo }}/issues/${{ steps.vars.outputs.issue_number }}"
           MSG=$(cat <<EOF
-          '*Name:*' ${FORMATTED_NAME}
+          '*Name:*' ${IMAGE_NAME}
           '*Number:*' ${IMAGE_NUMBER}
           '*Issue:*' <${ISSUE_LINK}|#${ISSUE_NUMBER}>
           '*Completed at:*' ${PRETTY_DATE}
           EOF
           )
-          echo "message<<EOF" >> $GITHUB_OUTPUT
-          echo "$MSG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "message=$MSG" >> $GITHUB_OUTPUT
         env:
-          FORMATTED_NAME: ${{ steps.vars.outputs.formatted_name }}
+          IMAGE_NAME: ${{ steps.vars.outputs.image_name }}
           IMAGE_NUMBER: ${{ steps.count.outputs.image_number }}
           ISSUE_NUMBER: ${{ steps.vars.outputs.issue_number }}
           PRETTY_DATE: ${{ steps.vars.outputs.pretty_date }}
           REPO: ${{ steps.vars.outputs.repo }}
-
+    
       - name: Post to Slack
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
