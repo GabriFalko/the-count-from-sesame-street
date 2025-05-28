@@ -108,12 +108,12 @@ jobs:
           set -e
           ISSUE_LINK="https://github.com/${REPO}/issues/${ISSUE_NUMBER}"
           MSG=$(cat <<EOF
-      *Name:* ${FORMATTED_NAME}
-      *Number:* ${IMAGE_NUMBER}
-      *Issue:* <${ISSUE_LINK}|#${ISSUE_NUMBER}>
-      *Completed at:* ${PRETTY_DATE}
-      EOF
-      )
+          *Name:* ${FORMATTED_NAME}
+          *Number:* ${IMAGE_NUMBER}
+          *Issue:* <${ISSUE_LINK}|#${ISSUE_NUMBER}>
+          *Completed at:* ${PRETTY_DATE}
+          EOF
+          )
           echo "message<<EOF" >> $GITHUB_OUTPUT
           echo "$MSG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
