@@ -14,15 +14,10 @@ jobs:
       - name: Prepare image info
         id: vars
         run: |
-          # Extract the image name (last word of the title)
           IMAGE_NAME=$(echo "${{ github.event.client_payload.image_name }}" | awk '{print $NF}')
           echo "image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
-
-          # Format pretty date
           PRETTY_DATE=$(date -d "${{ github.event.client_payload.timestamp }}" +"%B %d, %Y at %H:%M UTC")
           echo "pretty_date=$PRETTY_DATE" >> $GITHUB_OUTPUT
-
-          # Set the issue number and repo
           ISSUE_NUMBER="${{ github.event.client_payload.issue_number }}"
           REPO="${{ github.event.client_payload.repo }}"
           echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
@@ -77,11 +72,9 @@ EOF
           curl -X POST -H 'Content-type: application/json' \
             --data '{"text":"Greetings! I am The Count. They call me the Count because I love to count ... things"}' \
             "$SLACK_WEBHOOK_URL"
-        
           curl -X POST -H 'Content-type: application/json' \
             --data "{\"text\": \"${{ steps.slack.outputs.message }}\"}" \
             "$SLACK_WEBHOOK_URL"
-
           curl -X POST -H 'Content-type: application/json' \
             --data '{"text":"Ah, Ah, Ah!"}' \
             "$SLACK_WEBHOOK_URL"
