@@ -43,8 +43,11 @@ jobs:
             IMAGE_NAME="Example-Image"
           fi
 
-          # Extract last word as formatted name
-          FORMATTED_NAME=$(echo "$IMAGE_NAME" | awk '{print $NF}')
+          # Extract last word as formatted name, strip punctuation
+          FORMATTED_NAME=$(echo "$IMAGE_NAME" | awk '{print $NF}' | sed 's/[^a-zA-Z0-9._-]//g')
+          if [ -z "$FORMATTED_NAME" ]; then
+            FORMATTED_NAME="unknown"
+          fi
 
           RAW_TIMESTAMP="${{ github.event.client_payload.timestamp }}"
           if [ -z "$RAW_TIMESTAMP" ]; then
