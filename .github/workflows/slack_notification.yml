@@ -108,8 +108,8 @@ jobs:
           set -e
           ISSUE_LINK="https://github.com/${REPO}/issues/${ISSUE_NUMBER}"
           MSG=$(cat <<EOF
-          *Name:* ${FORMATTED_NAME}
           *Number:* ${IMAGE_NUMBER}
+	  *Name:* ${FORMATTED_NAME}
           *Issue:* <${ISSUE_LINK}|#${ISSUE_NUMBER}>
           *Completed at:* ${PRETTY_DATE}
           EOF
@@ -131,9 +131,11 @@ jobs:
           curl -X POST -H 'Content-type: application/json' \
             --data '{"text":"Greetings! I am The Count. They call me the Count because I love to count ... things"}' \
             "$SLACK_WEBHOOK_URL"
-          curl -X POST -H 'Content-type: application/json' \
+          sleep 5
+	  curl -X POST -H 'Content-type: application/json' \
             --data "{\"text\": \"${{ steps.slack.outputs.message }}\"}" \
             "$SLACK_WEBHOOK_URL"
-          curl -X POST -H 'Content-type: application/json' \
+          sleep 10
+	  curl -X POST -H 'Content-type: application/json' \
             --data '{"text":"Ah, Ah, Ah!"}' \
             "$SLACK_WEBHOOK_URL"
