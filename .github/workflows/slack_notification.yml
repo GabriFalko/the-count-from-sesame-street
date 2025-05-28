@@ -53,11 +53,11 @@ jobs:
         run: |
           ISSUE_LINK="https://github.com/${{ steps.vars.outputs.repo }}/issues/${{ steps.vars.outputs.issue_number }}"
           MSG=$(cat <<'EOF'
-                '*Name:*' ${IMAGE_NAME}
-                '*Number:*' ${IMAGE_NUMBER}
-                '*Issue:*' <${ISSUE_LINK}|#${ISSUE_NUMBER}>
-                '*Completed at:*' ${PRETTY_DATE}
-                EOF
+          '*Name:*' ${IMAGE_NAME}
+          '*Number:*' ${IMAGE_NUMBER}
+          '*Issue:*' <${ISSUE_LINK}|#${ISSUE_NUMBER}>
+          '*Completed at:*' ${PRETTY_DATE}
+          EOF
           )
           echo "message=$MSG" >> $GITHUB_OUTPUT
         env:
