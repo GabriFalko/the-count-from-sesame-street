@@ -42,7 +42,7 @@ jobs:
           IMAGE_NUMBER=$(($(wc -l < image-count.txt) + 1))
           echo "image_number=$IMAGE_NUMBER" >> $GITHUB_OUTPUT
           # Append formatted name and date only
-          echo "${{ steps.vars.outputs.formatted_name }},${{ steps.vars.outputs.pretty_date }}" >> image-count.txt
+          echo "$IMAGE_NUMBER, $FORMATTED_NAME, $PRETTY_DATE" >> image-count.txt
 
       - name: Commit and push updated image-count.txt
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -51,18 +51,18 @@ jobs:
           file_pattern: image-count.txt
           # Optionally, add your PAT if pushing to a protected repo:
           # token: ${{ secrets.GH_PAT }}
-          
+              
       - name: Compose Slack message
         id: slack
         run: |
           ISSUE_LINK="https://github.com/${{ steps.vars.outputs.repo }}/issues/${{ steps.vars.outputs.issue_number }}"
           MSG=$(cat <<EOF
-          *Name:* ${IMAGE_NAME}
-          *Number:* ${IMAGE_NUMBER}
-          *Issue:* <${ISSUE_LINK}|#${ISSUE_NUMBER}>
-          *Completed at:* ${PRETTY_DATE}
-          EOF
-          )
+*Name:* ${IMAGE_NAME}
+*Number:* ${IMAGE_NUMBER}
+*Issue:* <${ISSUE_LINK}|#${ISSUE_NUMBER}>
+*Completed at:* ${PRETTY_DATE}
+EOF
+)
           echo "message=$MSG" >> $GITHUB_OUTPUT
         env:
           IMAGE_NAME: ${{ steps.vars.outputs.image_name }}
