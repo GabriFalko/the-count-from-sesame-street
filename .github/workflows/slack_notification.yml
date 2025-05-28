@@ -59,13 +59,13 @@ jobs:
         id: slack
         run: |
           ISSUE_LINK="https://github.com/${REPO}/issues/${ISSUE_NUMBER}"
-          MSG=$(cat <<EOF
-*Name:* ${IMAGE_NAME}
-*Number:* ${IMAGE_NUMBER}
-*Issue:* <${ISSUE_LINK}|#${ISSUE_NUMBER}>
-*Completed at:* ${PRETTY_DATE}
-EOF
-)
+          MSG=$(cat << EOF 
+          *Name:* ${IMAGE_NAME}
+          *Number:* ${IMAGE_NUMBER}
+          *Issue:* <${ISSUE_LINK}|#${ISSUE_NUMBER}>
+          *Completed at:* ${PRETTY_DATE}
+          EOF
+          )
           echo "message=$MSG" >> $GITHUB_OUTPUT
         env:
           IMAGE_NAME: ${{ steps.vars.outputs.formatted_name }}
