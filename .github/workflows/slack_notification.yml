@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       image_name:
-        description: "Image name"
+        description: "Image name (title)"
         required: false
       issue_number:
         description: "Issue number"
@@ -15,7 +15,7 @@ on:
         description: "Repo (owner/repo)"
         required: false
       timestamp:
-        description: "Timestamp (ISO8601 or RFC2822, e.g. 2025-05-28T20:25:00Z)"
+        description: "Timestamp (UTC, e.g. '2025-05-28T20:25:00Z')"
         required: false
 
 jobs:
@@ -34,108 +34,6 @@ jobs:
       - name: Prepare image info
         id: vars
         run: |
-          # Prefer client_payload (repository_dispatch), fall back to workflow_dispatch inputs, then to empty/defaults
+          # Fallback logic for inputs/event data
           IMAGE_NAME="${{ github.event.client_payload.image_name }}"
-          if [ -z "$IMAGE_NAME" ]; then
-            IMAGE_NAME="${{ github.event.inputs.image_name }}"
-          fi
-
-          # If still empty, fallback to 'Unknown'
-          if [ -z "$IMAGE_NAME" ]; then
-            IMAGE_NAME="Unknown"
-          fi
-
-          # Extract last word as formatted name
-          FORMATTED_NAME=$(awk '{print $NF}' <<< "$IMAGE_NAME")
-
-          # Prefer client_payload timestamp, then workflow_dispatch input, finally now
-          RAW_TIMESTAMP="${{ github.event.client_payload.timestamp }}"
-          if [ -z "$RAW_TIMESTAMP" ]; then
-            RAW_TIMESTAMP="${{ github.event.inputs.timestamp }}"
-          fi
-          if [ -z "$RAW_TIMESTAMP" ]; then
-            RAW_TIMESTAMP="now"
-          fi
-
-          # Format as UTC human-readable
-          PRETTY_DATE=$(date -u -d "$RAW_TIMESTAMP" +"%B %d, %Y at %H:%M UTC")
-
-          # Prefer client_payload issue_number, then workflow_dispatch input, finally 0
-          ISSUE_NUMBER="${{ github.event.client_payload.issue_number }}"
-          if [ -z "$ISSUE_NUMBER" ]; then
-            ISSUE_NUMBER="${{ github.event.inputs.issue_number }}"
-          fi
-          if [ -z "$ISSUE_NUMBER" ]; then
-            ISSUE_NUMBER="0"
-          fi
-
-          # Prefer client_payload repo, then workflow_dispatch input, finally github.repository
-          REPO="${{ github.event.client_payload.repo }}"
-          if [ -z "$REPO" ]; then
-            REPO="${{ github.event.inputs.repo }}"
-          fi
-          if [ -z "$REPO" ]; then
-            REPO="${{ github.repository }}"
-          fi
-
-          echo "formatted_name=$FORMATTED_NAME" >> $GITHUB_OUTPUT
-          echo "pretty_date=$PRETTY_DATE" >> $GITHUB_OUTPUT
-          echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
-          echo "repo=$REPO" >> $GITHUB_OUTPUT
-          echo "image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
-
-      - name: Ensure image-count.txt exists
-        run: |
-          if [ ! -f image-count.txt ]; then
-            touch image-count.txt
-          fi
-
-      - name: Calculate next image number and append new entry
-        id: count
-        run: |
-          IMAGE_NUMBER=$(($(wc -l < image-count.txt) + 1))
-          echo "image_number=$IMAGE_NUMBER" >> $GITHUB_OUTPUT
-          # Append image number, formatted name, date
-          echo "$IMAGE_NUMBER,${{ steps.vars.outputs.formatted_name }},${{ steps.vars.outputs.pretty_date }}" >> image-count.txt
-
-      - name: Commit and push updated image-count.txt
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Add image ${{ steps.vars.outputs.formatted_name }} as #${{ steps.count.outputs.image_number }}"
-          file_pattern: image-count.txt
-
-      - name: Compose Slack message
-        id: slack
-        run: |
-          ISSUE_LINK="https://github.com/${{ steps.vars.outputs.repo }}/issues/${{ steps.vars.outputs.issue_number }}"
-          MSG=$(cat <<EOF
-*Name:* $FORMATTED_NAME
-*Number:* $IMAGE_NUMBER
-*Issue:* <$ISSUE_LINK|#${ISSUE_NUMBER}>
-*Completed at:* $PRETTY_DATE
-EOF
-)
-          # Multi-line output block for GitHub Actions
-          echo "message<<EOF" >> $GITHUB_OUTPUT
-          echo "$MSG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        env:
-          FORMATTED_NAME: ${{ steps.vars.outputs.formatted_name }}
-          IMAGE_NUMBER: ${{ steps.count.outputs.image_number }}
-          ISSUE_NUMBER: ${{ steps.vars.outputs.issue_number }}
-          PRETTY_DATE: ${{ steps.vars.outputs.pretty_date }}
-          REPO: ${{ steps.vars.outputs.repo }}
-
-      - name: Post to Slack
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"Greetings! I am The Count. They call me the Count because I love to count ... things"}' \
-            "$SLACK_WEBHOOK_URL"
-          curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"${{ steps.slack.outputs.message }}\"}" \
-            "$SLACK_WEBHOOK_URL"
-          curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"Ah, Ah, Ah!"}' \
-            "$SLACK_WEBHOOK_URL"
+         
