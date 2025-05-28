@@ -11,8 +11,12 @@ jobs:
       - name: Format Slack message
         id: format
         run: |
-          msg=":camera: *New Image Completed*\n*Name:* ${{ github.event.client_payload.image_name }}\n*Number:* ${{ github.event.client_payload.image_number }}\n*Completed at:* ${{ github.event.client_payload.timestamp }}"
-          echo "message=$msg" >> $GITHUB_OUTPUT
+          # Extract image name (last word of the title)
+          IMAGE_NAME=$(echo "${{ github.event.client_payload.image_name }}" | awk '{print $NF}')
+          # Format date prettily
+          PRETTY_DATE=$(date -d "${{ github.event.client_payload.timestamp }}" +"%B %d, %Y at %H:%M UTC")
+          # Compose Slack message
+          echo "message=:camera: *New Image Completed*\n*Name:* $IMAGE_NAME\n*Number:* ${{ github.event.client_payload.image_number }}\n*Completed at:* $PRETTY_DATE" >> $GITHUB_OUTPUT
 
       - name: Post to Slack
         env:
