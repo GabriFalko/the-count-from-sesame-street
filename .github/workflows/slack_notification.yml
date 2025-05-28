@@ -12,6 +12,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Pull latest changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
+
       - name: Prepare image info
         id: vars
         run: |
@@ -36,12 +42,6 @@ jobs:
           IMAGE_NUMBER=$(($(wc -l < image-count.txt) + 1))
           echo "image_number=$IMAGE_NUMBER" >> $GITHUB_OUTPUT
           echo "${{ steps.vars.outputs.image_name }},${{ steps.vars.outputs.pretty_date }}" >> image-count.txt
-
-      - name: Pull latest changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main
 
       - name: Commit and push updated image-count.txt
         uses: stefanzweifel/git-auto-commit-action@v5
