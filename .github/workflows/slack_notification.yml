@@ -21,9 +21,8 @@ jobs:
       - name: Prepare image info
         id: vars
         run: |
-          # Extract only the last word from the image_name as the formatted name
           FORMATTED_NAME=$(echo "${{ github.event.client_payload.image_name }}" | awk '{print $NF}')
-          PRETTY_DATE=$(date -d "${{ github.event.client_payload.timestamp }}" +"%B %d, %Y at %H:%M UTC")
+          PRETTY_DATE=$(date -u -d "${{ github.event.client_payload.timestamp }}" +"%B %d, %Y at %H:%M UTC")
           echo "formatted_name=$FORMATTED_NAME" >> $GITHUB_OUTPUT
           echo "pretty_date=$PRETTY_DATE" >> $GITHUB_OUTPUT
           ISSUE_NUMBER="${{ github.event.client_payload.issue_number }}"
@@ -57,7 +56,7 @@ jobs:
         id: slack
         run: |
           ISSUE_LINK="https://github.com/${{ steps.vars.outputs.repo }}/issues/${{ steps.vars.outputs.issue_number }}"
-            MSG=$(cat <<"EOF"
+          MSG=$(cat <<EOF
           '*Name:*' ${FORMATTED_NAME}
           '*Number:*' ${IMAGE_NUMBER}
           '*Issue:*' <${ISSUE_LINK}|#${ISSUE_NUMBER}>
