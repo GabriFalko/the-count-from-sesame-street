@@ -126,7 +126,7 @@ jobs:
 
       - name: Post to Slack
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.THE_COUNT_CHAT_WEBHOOK }}
         run: |
           curl -X POST -H 'Content-type: application/json' \
             --data '{"text":"Greetings! I am The Count. They call me the Count because I love to count ... things"}' \
@@ -138,7 +138,7 @@ jobs:
             --data "{\"text\": \"${{ steps.slack.outputs.message }}\"}" \
             "$SLACK_WEBHOOK_URL"
           
-          sleep 10
+          sleep 5
           
           curl -X POST -H 'Content-type: application/json' \
             --data '{"text":"Ah, Ah, Ah!"}' \
