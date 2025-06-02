@@ -25,7 +25,7 @@ Welcome to **The Count** project! This repository contains a GitHub Actions-powe
   <img src="/assets/the-count-diagram.drawio.svg" default="the-count-diagram.drawio">
 </p>
 
-`Some unfinished features are included in this model`
+Model of **Prototype** which may include unfinished features
 
 ---
 
@@ -53,9 +53,10 @@ Welcome to **The Count** project! This repository contains a GitHub Actions-powe
 3. **On Slack:**
    - Your team sees a message like:
      ```
-     :icon: New Image Completed
-     Name: [Image Name]
+     Greeting Message
      Number: [Image Number]
+     Name: [Image Name]
+     Issue: [Link to related Issue]
      Completed at: [Date & Time]
      ```
 
