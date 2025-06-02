@@ -43,3 +43,4 @@ python-fips
 fluentd-kubernetes-daemonset
 maven
 dotnet-runtime
+46,openscap,May 29, 2025 at 17:03 UTC
