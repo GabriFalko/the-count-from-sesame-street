@@ -20,10 +20,12 @@ Welcome to **The Count** project! This repository contains a GitHub Actions-powe
 
 3. **Slack Notification:**  
    The bot uses Slack's "Incoming Webhook" feature to send the message to your team's Slack channel. No manual steps are needed.
-   
+
 <p align="center">
   <img src="/assets/the-count-diagram.drawio.svg" default="the-count-diagram.drawio">
 </p>
+
+`Some unfinished features are included in this model`
 
 ---
 
