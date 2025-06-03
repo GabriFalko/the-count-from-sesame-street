@@ -46,3 +46,4 @@ dotnet-runtime
 46,openscap,May 29, 2025 at 17:03 UTC
 47,loki,May 21, 2025 at 00:00 UTC
 48,tomcat,May 23, 2025 at 00:00 UTC
+49,loki,May 23, 2025 at 00:00 UTC
