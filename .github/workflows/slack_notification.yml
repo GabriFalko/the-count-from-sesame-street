@@ -9,7 +9,7 @@ on:
         description: "Image name (title)"
         required: false
       issue_number:
-        description: "Issue number"
+        description: "Issue number (no #)"
         required: false
       repo:
         description: "Repo (owner/repo)"
