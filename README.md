@@ -85,4 +85,43 @@ If you have questions or need help setting this up, please ask your repository m
 
 ---
 
+## Scheduled Slack Message Deletion with GitHub Actions
+
+This project includes a scheduled GitHub Action to automatically delete Slack bot messages older than 7 days.
+
+### Workflow YAML
+```yaml
+name: Delete Old Slack Bot Messages
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Every day at 2am UTC
+  workflow_dispatch:      # Allow manual trigger
+
+jobs:
+  delete-messages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install requests
+      - name: Delete old Slack bot messages
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+        run: python slack-app-code/delete_old_messages.py
+```
+
+### Usage
+- Add your `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID` as GitHub Secrets.
+- The workflow will run daily or can be triggered manually from the Actions tab.
+- No server or manual intervention is required.
+
+---
+
 **The Count** keeps counting so you don’t have to!
