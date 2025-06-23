@@ -133,16 +133,8 @@ jobs:
         run: |
           set -e
           ISSUE_LINK="https://github.com/${REPO}/issues/${ISSUE_NUMBER}"
-          MSG=$(cat <<EOF
-          *Number:* ${IMAGE_NUMBER}
-          *Name:* ${FORMATTED_NAME}
-          *Issue:* <${ISSUE_LINK}|#${ISSUE_NUMBER}>
-          *Completed at:* ${PRETTY_DATE}
-          EOF
-          )
-          echo "message<<EOF" >> $GITHUB_OUTPUT
-          echo "$MSG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          MSG="*#${IMAGE_NUMBER}* ${FORMATTED_NAME} | <${ISSUE_LINK}|Issue #${ISSUE_NUMBER}> | ${PRETTY_DATE}"
+          echo "message=$MSG" >> $GITHUB_OUTPUT
         env:
           FORMATTED_NAME: ${{ steps.vars.outputs.formatted_name }}
           IMAGE_NUMBER: ${{ steps.count.outputs.image_number }}
@@ -154,14 +146,9 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
+ 
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"Greetings! I am The Count. They call me the Count because I love to count ... things"}' \
-            "$SLACK_WEBHOOK_URL"
-          
-          sleep 5
-          
-          curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"${{ steps.slack.outputs.message }}\"}" \
+            --data "{\"text\": \"Greetings! I am The Count. ${{ steps.slack.outputs.message }}\"}" \
             "$SLACK_WEBHOOK_URL"
           
           sleep 5
