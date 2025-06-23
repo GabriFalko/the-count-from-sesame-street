@@ -81,13 +81,30 @@ jobs:
           echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
           echo "repo=$REPO" >> $GITHUB_OUTPUT
 
-      - name: Check name is valid and has no -ro at the end else ignore
+      - name: Check if image should be ignored
         run: |
           IMAGE_NAME="${{ steps.vars.outputs.image_name }}"
-          if [[ "$IMAGE_NAME" =~ -ro$ ]]; then
-            echo "Image name ends with -ro, skipping."
-            exit 0
-          fi
+          FORMATTED_NAME="${{ steps.vars.outputs.formatted_name }}"
+          
+          # Define patterns to ignore (case-insensitive)
+          # Add more patterns here as needed
+          IGNORE_PATTERNS=(
+            "-ro$"           # ends with -ro
+            "-readonly$"     # ends with -readonly  
+            "test-"          # starts with test-
+            "-test$"         # ends with -test
+            "debug-"         # starts with debug-
+            "-debug$"        # ends with -debug
+          )
+          
+          for pattern in "${IGNORE_PATTERNS[@]}"; do
+            if [[ "$IMAGE_NAME" =~ $pattern ]] || [[ "$FORMATTED_NAME" =~ $pattern ]]; then
+              echo "Image matches ignore pattern '$pattern': $IMAGE_NAME"
+              echo "Stopping workflow - image should be ignored."
+              exit 1
+            fi
+          done
+          
           echo "Image name is valid: $IMAGE_NAME"
 
       - name: Ensure image-count.txt exists
