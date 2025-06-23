@@ -18,6 +18,10 @@ on:
         description: "Timestamp (UTC, e.g. '2025-05-28T20:25:00Z')"
         required: false
 
+concurrency:
+  group: slack-notifications
+  cancel-in-progress: false
+
 jobs:
   post-to-slack:
     runs-on: ubuntu-latest
@@ -148,11 +152,5 @@ jobs:
         run: |
  
           curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"Greetings! I am The Count. ${{ steps.slack.outputs.message }}\"}" \
-            "$SLACK_WEBHOOK_URL"
-          
-          sleep 5
-          
-          curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"Ah, Ah, Ah!"}' \
+            --data "{\"text\": \"Greetings! I am The Count. ${{ steps.slack.outputs.message }} Ah, Ah, Ah!\"}" \
             "$SLACK_WEBHOOK_URL"
