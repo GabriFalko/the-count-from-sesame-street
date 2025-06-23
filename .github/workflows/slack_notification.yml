@@ -81,6 +81,15 @@ jobs:
           echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
           echo "repo=$REPO" >> $GITHUB_OUTPUT
 
+      - name: Check name is valid and has no -ro at the end else ignore
+        run: |
+          IMAGE_NAME="${{ steps.vars.outputs.image_name }}"
+          if [[ "$IMAGE_NAME" =~ -ro$ ]]; then
+            echo "Image name ends with -ro, skipping."
+            exit 0
+          fi
+          echo "Image name is valid: $IMAGE_NAME"
+
       - name: Ensure image-count.txt exists
         run: |
           if [ ! -f image-count.txt ]; then
