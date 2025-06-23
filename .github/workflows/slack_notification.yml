@@ -18,6 +18,10 @@ on:
         description: "Timestamp (UTC, e.g. '2025-05-28T20:25:00Z')"
         required: false
 
+concurrency:
+  group: slack-notifications
+  cancel-in-progress: false
+
 jobs:
   post-to-slack:
     runs-on: ubuntu-latest
@@ -81,6 +85,32 @@ jobs:
           echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
           echo "repo=$REPO" >> $GITHUB_OUTPUT
 
+      - name: Check if image should be ignored
+        run: |
+          IMAGE_NAME="${{ steps.vars.outputs.image_name }}"
+          FORMATTED_NAME="${{ steps.vars.outputs.formatted_name }}"
+          
+          # Define patterns to ignore (case-insensitive)
+          # Add more patterns here as needed
+          IGNORE_PATTERNS=(
+            "-ro$"           # ends with -ro
+            "-readonly$"     # ends with -readonly  
+            "test-"          # starts with test-
+            "-test$"         # ends with -test
+            "debug-"         # starts with debug-
+            "-debug$"        # ends with -debug
+          )
+          
+          for pattern in "${IGNORE_PATTERNS[@]}"; do
+            if [[ "$IMAGE_NAME" =~ $pattern ]] || [[ "$FORMATTED_NAME" =~ $pattern ]]; then
+              echo "Image matches ignore pattern '$pattern': $IMAGE_NAME"
+              echo "Stopping workflow - image should be ignored."
+              exit 1
+            fi
+          done
+          
+          echo "Image name is valid: $IMAGE_NAME"
+
       - name: Ensure image-count.txt exists
         run: |
           if [ ! -f image-count.txt ]; then
@@ -107,16 +137,8 @@ jobs:
         run: |
           set -e
           ISSUE_LINK="https://github.com/${REPO}/issues/${ISSUE_NUMBER}"
-          MSG=$(cat <<EOF
-          *Number:* ${IMAGE_NUMBER}
-          *Name:* ${FORMATTED_NAME}
-          *Issue:* <${ISSUE_LINK}|#${ISSUE_NUMBER}>
-          *Completed at:* ${PRETTY_DATE}
-          EOF
-          )
-          echo "message<<EOF" >> $GITHUB_OUTPUT
-          echo "$MSG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          MSG="*#${IMAGE_NUMBER}* ${FORMATTED_NAME} | <${ISSUE_LINK}|Issue #${ISSUE_NUMBER}> | ${PRETTY_DATE}"
+          echo "message=$MSG" >> $GITHUB_OUTPUT
         env:
           FORMATTED_NAME: ${{ steps.vars.outputs.formatted_name }}
           IMAGE_NUMBER: ${{ steps.count.outputs.image_number }}
@@ -128,18 +150,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
+ 
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"Greetings! I am The Count. They call me the Count because I love to count ... things"}' \
-            "$SLACK_WEBHOOK_URL"
-          
-          sleep 5
-          
-          curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"${{ steps.slack.outputs.message }}\"}" \
-            "$SLACK_WEBHOOK_URL"
-          
-          sleep 5
-          
-          curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"Ah, Ah, Ah!"}' \
+            --data "{\"text\": \"Greetings! I am The Count. ${{ steps.slack.outputs.message }} Ah, Ah, Ah!\"}" \
             "$SLACK_WEBHOOK_URL"
